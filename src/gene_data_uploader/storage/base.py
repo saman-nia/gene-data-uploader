@@ -25,3 +25,11 @@ class AbstractStorage(ABC):
         max_size_bytes: int | None = None,
     ) -> StoredFile:
         """Persist an uploaded file and return storage metadata."""
+
+    @abstractmethod
+    def resolve_path(self, storage_path: str) -> Path:
+        """Resolve a stored file path into a local file path."""
+
+    @abstractmethod
+    def delete(self, storage_path: str) -> None:
+        """Delete a stored file if it exists."""

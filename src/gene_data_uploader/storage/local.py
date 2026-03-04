@@ -50,3 +50,15 @@ class LocalFileStorage(AbstractStorage):
             file_size_bytes=total_size,
             sha256=digest.hexdigest(),
         )
+
+    def resolve_path(self, storage_path: str) -> Path:
+        path = (self.root_directory / storage_path).resolve()
+        root = self.root_directory.resolve()
+        if root not in path.parents and path != root:
+            raise ValueError("Invalid storage path")
+        return path
+
+    def delete(self, storage_path: str) -> None:
+        path = self.resolve_path(storage_path)
+        if path.exists():
+            path.unlink()
