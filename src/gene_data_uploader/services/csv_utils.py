@@ -62,3 +62,39 @@ def analyze_csv(path: Path) -> CsvSummary:
         column_count=len(normalized_columns),
         row_count=row_count,
     )
+
+
+def read_csv_rows(path: Path, delimiter: str, offset: int = 0, limit: int | None = None) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter=delimiter, quotechar='"')
+
+        skipped = 0
+        while skipped < offset:
+            if next(reader, None) is None:
+                return []
+            skipped += 1
+
+        for row_index, row in enumerate(reader, start=2 + offset):
+            if None in row and row[None]:
+                raise ValueError(f"Inconsistent column count at row {row_index}")
+
+            if all(value in ("", None) for value in row.values()):
+                continue
+
+            if any(value is None for value in row.values()):
+                raise ValueError(f"Missing value mapping at row {row_index}")
+
+            if limit is not None and len(rows) >= limit:
+                break
+
+            normalized_row: dict[str, str] = {}
+            for key, value in row.items():
+                if key is None:
+                    continue
+                normalized_row[key] = value
+
+            rows.append(normalized_row)
+
+    return rows
