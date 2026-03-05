@@ -8,8 +8,8 @@ from starlette.concurrency import run_in_threadpool
 
 from gene_data_uploader.core.config import Settings
 from gene_data_uploader.db.models import UploadedFile
-from gene_data_uploader.schemas.file import FileListResponse, FileMetadata
-from gene_data_uploader.services.csv_utils import analyze_csv
+from gene_data_uploader.schemas.file import FileDataResponse, FileListResponse, FileMetadata
+from gene_data_uploader.services.csv_utils import analyze_csv, read_csv_rows
 from gene_data_uploader.storage.base import AbstractStorage, StorageLimitExceeded
 
 router = APIRouter(tags=["files"])
@@ -148,3 +148,41 @@ def get_file_metadata(file_id: str, db: Session = Depends(get_db_session)) -> Fi
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
 
     return to_file_metadata(model)
+
+
+@router.get("/files/{file_id}/data", response_model=FileDataResponse)
+async def get_file_data(
+    file_id: str,
+    offset: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=10000, description="Max rows to return (default 100, max 10000)"),
+    db: Session = Depends(get_db_session),
+    storage: AbstractStorage = Depends(get_storage),
+) -> FileDataResponse:
+    model = db.get(UploadedFile, file_id)
+    if not model:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+
+    try:
+        rows = await run_in_threadpool(
+            read_csv_rows,
+            storage.resolve_path(model.storage_path),
+            model.delimiter,
+            offset,
+            limit,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stored file is missing") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to read stored CSV") from exc
+
+    return FileDataResponse(
+        file_id=model.id,
+        original_filename=model.original_filename,
+        delimiter=model.delimiter,
+        columns=model.columns,
+        row_count=model.row_count,
+        returned_rows=len(rows),
+        offset=offset,
+        limit=limit,
+        rows=rows,
+    )
