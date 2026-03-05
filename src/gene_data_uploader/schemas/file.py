@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FileMetadata(BaseModel):
@@ -17,3 +17,22 @@ class FileMetadata(BaseModel):
     columns: list[str]
     sha256: str
     upload_timestamp: datetime
+
+
+class FileListResponse(BaseModel):
+    items: list[FileMetadata]
+    total: int
+    offset: int
+    limit: int | None
+
+
+class FileDataResponse(BaseModel):
+    file_id: str
+    original_filename: str
+    delimiter: str
+    columns: list[str]
+    row_count: int
+    returned_rows: int
+    offset: int = 0
+    limit: int = 100
+    rows: list[dict[str, str]] = Field(default_factory=list)
