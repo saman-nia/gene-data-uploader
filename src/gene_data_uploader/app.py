@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 
 from gene_data_uploader.api.routes.files import router as files_router
 from gene_data_uploader.core.config import Settings, get_settings
@@ -30,6 +31,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = build_engine(active_settings.database_url)
     app.state.session_factory = build_session_factory(app.state.engine)
     app.state.storage = build_storage(active_settings)
+
+    @app.get("/favicon.ico", response_class=PlainTextResponse, tags=["system"])
+    @app.get("/health", response_class=PlainTextResponse, tags=["system"])
+    @app.get("/", response_class=PlainTextResponse, tags=["system"])
+    async def health_check() -> PlainTextResponse:
+        return PlainTextResponse("OK")
 
     app.include_router(files_router)
 
