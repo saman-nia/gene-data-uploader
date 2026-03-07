@@ -16,5 +16,26 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build: .
+    container_name: gene-data-uploader-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/gene_data_uploader
+      STORAGE_ROOT: /app/storage/files
+      MAX_UPLOAD_SIZE_MB: 100
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - storage_data:/app/storage
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
+  storage_data:
