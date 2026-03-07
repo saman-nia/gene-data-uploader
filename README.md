@@ -4,7 +4,18 @@ A REST API for uploading CSV files and getting the data back as JSON. Built with
 
 ## Prerequisites
 
+- Python 3.11+
+- [Poetry](https://python-poetry.org/docs/#installation) (dependency and environment management)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
+
+## Environment setup
+
+This project uses [Poetry](https://python-poetry.org/docs/#installation) to manage dependencies and virtual environments.
+
+```bash
+poetry install          # create venv and install all dependencies
+poetry shell            # activate the virtual environment
+```
 
 ## Getting started
 
@@ -96,10 +107,9 @@ What is covered:
 
 ## Local development (without Docker)
 
-If you want to run the API locally:
+Make sure you have completed the [Environment setup](#environment-setup) steps, then:
 
 ```bash
-poetry install
 docker compose up db -d          # start only PostgreSQL
 cp .env.example .env             # configure environment variables
 poetry run uvicorn gene_data_uploader.main:app --reload --host 0.0.0.0 --port 8000
