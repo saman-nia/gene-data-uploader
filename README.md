@@ -28,6 +28,37 @@ Go to [http://localhost:8000/docs](http://localhost:8000/docs) — you can test 
 docker compose down -v
 ```
 
+## How to test it with Swagger
+
+Open [http://localhost:8000/docs](http://localhost:8000/docs) and try the following:
+
+### Step 1 — Upload a CSV file
+
+1. Expand **POST /files/upload**
+2. Click **Try it out**
+3. Choose `data/genes_human.csv` from this repository
+4. Click **Execute**
+5. Copy the `id` from the response — you need it for the next steps
+
+### Step 2 — List uploaded files
+
+1. Expand **GET /files**
+2. Click **Try it out**, then **Execute**
+3. You can filter by `filename` or use `offset` and `limit` for pagination
+
+### Step 3 — Get file metadata
+
+1. Expand **GET /files/{file_id}/metadata**
+2. Paste the `id` from Step 1
+3. Click **Execute**
+
+### Step 4 — Get CSV data as JSON
+
+1. Expand **GET /files/{file_id}/data**
+2. Paste the `id` from Step 1
+3. You can set `offset` and `limit` to paginate through large files. By default, the `limit` is 100.
+4. Click **Execute**
+
 ## API endpoints
 
 | Method | Path | Description |
@@ -47,6 +78,13 @@ poetry install
 poetry run pytest
 ```
 
+What is covered:
+
+- CSV parsing (delimiter detection, row validation)
+- Full flow: upload → metadata → data retrieval
+- Real dataset test with `data/genes_human.csv`
+- Error cases: invalid CSV, oversized files, DB failures, 404s
+
 ## Local development (without Docker)
 
 If you want to run the API locally:
@@ -57,3 +95,51 @@ docker compose up db -d          # start only PostgreSQL
 cp .env.example .env             # configure environment variables
 poetry run uvicorn gene_data_uploader.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+## Project structure
+
+```
+gene-data-uploader/
+│
+├── src/gene_data_uploader/
+│   ├── main.py                    # Uvicorn entrypoint
+│   ├── app.py                     # Application factory
+│   │
+│   ├── core/
+│   │   └── config.py              # Settings (pydantic-settings)
+│   │
+│   ├── db/
+│   │   ├── base.py                # SQLAlchemy DeclarativeBase
+│   │   ├── models.py              # SQLAlchemy model (UploadedFile)
+│   │   └── session.py             # Engine and session factory
+│   │
+│   ├── schemas/
+│   │   └── file.py                # Pydantic response schemas
+│   │
+│   ├── services/
+│   │   └── csv_utils.py           # CSV parsing and validation
+│   │
+│   ├── storage/
+│   │   ├── base.py                # Abstract storage interface
+│   │   ├── local.py               # Local filesystem storage
+│   │   └── factory.py             # Storage backend factory
+│   │
+│   └── api/routes/
+│       └── files.py               # API route handlers
+│
+├── tests/                         # Test suite (pytest + SQLite)
+├── data/                          # Sample datasets
+│
+├── Dockerfile                     # Container image definition
+├── docker-compose.yml             # Multi-container orchestration
+├── pyproject.toml                 # Dependencies (Poetry)
+├── Makefile                       # Dev commands (run, test, docker)
+└── .env.example                   # Environment variable template
+```
+
+## Design decisions
+
+- **Storage abstraction** — File storage uses an abstract interface (`AbstractStorage`), so it is easy to switch from local disk to something like S3 or MinIO later.
+- **Streaming uploads** — Files are written in chunks, so large files don't load fully into memory.
+- **Cleanup on failure** — If validation or the database commit fails, the stored file gets deleted automatically.
+- **SQLite for tests** — Tests use SQLite instead of PostgreSQL, so no extra setup is needed to run them.
