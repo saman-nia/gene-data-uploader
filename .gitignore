@@ -204,6 +204,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Dataset files (contain sensitive/private data)
+data/genes_human.csv
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

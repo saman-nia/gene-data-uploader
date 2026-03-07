@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session as SqlAlchemySession
 
@@ -61,7 +62,8 @@ def test_list_files_returns_uploaded_items(client):
 
 def test_upload_accepts_human_genes_dataset(client):
     dataset_path = Path(__file__).resolve().parents[1] / "data" / "genes_human.csv"
-    assert dataset_path.exists(), "Expected genes_human.csv to exist in data/"
+    if not dataset_path.exists():
+        pytest.skip("genes_human.csv not found in data/ — see README for download instructions")
 
     with dataset_path.open("rb") as handle:
         response = client.post(

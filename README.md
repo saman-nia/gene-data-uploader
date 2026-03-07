@@ -28,6 +28,15 @@ Go to [http://localhost:8000/docs](http://localhost:8000/docs) — you can test 
 docker compose down -v
 ```
 
+## Sample dataset
+
+The `data/genes_human.csv` file is **not included** in the repository for data privacy reasons. To run the full test suite or try the Swagger example below, download it manually:
+
+1. Get `genes_human.csv` from [HGNC](https://www.genenames.org/download/statistics-and-files/) (use the "Complete dataset" download, semicolon-delimited)
+2. Place it at `data/genes_human.csv`
+
+Without this file the real-dataset test will be skipped automatically.
+
 ## How to test it with Swagger
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) and try the following:
@@ -36,7 +45,7 @@ Open [http://localhost:8000/docs](http://localhost:8000/docs) and try the follow
 
 1. Expand **POST /files/upload**
 2. Click **Try it out**
-3. Choose `data/genes_human.csv` from this repository
+3. Choose a CSV file (e.g. `data/genes_human.csv` if you downloaded it, or any other CSV)
 4. Click **Execute**
 5. Copy the `id` from the response — you need it for the next steps
 
@@ -82,7 +91,7 @@ What is covered:
 
 - CSV parsing (delimiter detection, row validation)
 - Full flow: upload → metadata → data retrieval
-- Real dataset test with `data/genes_human.csv`
+- Real dataset test with `data/genes_human.csv` (skipped if file is not present)
 - Error cases: invalid CSV, oversized files, DB failures, 404s
 
 ## Local development (without Docker)
