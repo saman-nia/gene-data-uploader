@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gene-data-uploader"
 version = "0.1.0"
-description = "FastAPI challenge solution for CSV upload, metadata persistence, and retrieval"
+description = "REST API for CSV file upload, metadata management, and retrieval"
 authors = ["Saman Nia <saman.p.nia@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "gene_data_uploader", from = "src" }]
