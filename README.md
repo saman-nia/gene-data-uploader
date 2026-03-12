@@ -13,8 +13,8 @@ A REST API for uploading CSV files and getting the data back as JSON. Built with
 This project uses [Poetry](https://python-poetry.org/docs/#installation) to manage dependencies and virtual environments.
 
 ```bash
-poetry install          # create venv and install all dependencies
-poetry shell            # activate the virtual environment
+poetry install                   # create venv and install all dependencies
+eval $(poetry env activate)      # activate the virtual environment
 ```
 
 ## Getting started
