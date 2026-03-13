@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: mirror.gcr.io/library/postgres:16-alpine
     container_name: gene-data-uploader-db
     environment:
       POSTGRES_DB: gene_data_uploader
