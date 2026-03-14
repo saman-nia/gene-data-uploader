@@ -20,7 +20,7 @@ class UploadedFile(Base):
     column_count: Mapped[int] = mapped_column(Integer, nullable=False)
     columns: Mapped[list[str]] = mapped_column(JSON, nullable=False)
 
-    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     upload_timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
