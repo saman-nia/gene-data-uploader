@@ -75,6 +75,11 @@ async def upload_file(
     ).scalars().first()
     if existing:
         safe_delete(storage, stored_file.storage_path)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"File already exists with id '{existing.id}'",
+        )
+
     # Defensive check for storage backends that do not enforce max_size_bytes.
     if stored_file.file_size_bytes > settings.max_upload_size_bytes:
         safe_delete(storage, stored_file.storage_path)
