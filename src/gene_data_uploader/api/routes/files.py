@@ -74,6 +74,7 @@ async def upload_file(
         select(UploadedFile).where(UploadedFile.sha256 == stored_file.sha256)
     ).scalars().first()
     if existing:
+        safe_delete(storage, stored_file.storage_path)
     # Defensive check for storage backends that do not enforce max_size_bytes.
     if stored_file.file_size_bytes > settings.max_upload_size_bytes:
         safe_delete(storage, stored_file.storage_path)
