@@ -69,6 +69,10 @@ async def upload_file(
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to persist uploaded file") from exc
 
+    # Check for duplicate file by SHA256 hash
+    existing = db.execute(
+        select(UploadedFile).where(UploadedFile.sha256 == stored_file.sha256)
+    ).scalars().first()
     # Defensive check for storage backends that do not enforce max_size_bytes.
     if stored_file.file_size_bytes > settings.max_upload_size_bytes:
         safe_delete(storage, stored_file.storage_path)
